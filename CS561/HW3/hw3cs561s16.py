@@ -95,32 +95,6 @@ def node_parser(lines,bn):
         else:
             bn[node_name] = ['chance',parents,assignments] 
     
-        
-# def node_values_paser(lines, num_parents):
-#     values = {}
-#     for line in lines:
-#         value_and_parent_assignments = line.split(" ")
-#         value = float(value_and_parent_assignments[0])
-#         parent_assignments = value_and_parent_assignments[1:]
-#         assignment = []
-#         if num_parents == 0:
-#             assignment = (None)
-#         elif num_parents == 1:
-#             if parent_assignments[0] == "+":
-#                 assignment = (True)
-#             elif parent_assignments[0] == "-":
-#                 assignment = (False)
-#         elif num_parents >= 2 :
-#             for i in range(num_parents):
-#                 if parent_assignments[i] == "+":
-#                     assignment.append(True)
-#                 elif parent_assignments[i] == "-":
-#                     assignment.append(False)
-#             assignment = tuple(assignment)
-#         values[assignment] = value
-#     return values
-
-
 def node_values_paser(lines, num_parents):
     values = {}
     for line in lines:
