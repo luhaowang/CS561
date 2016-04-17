@@ -4,7 +4,7 @@
 # Title: Bayesian Network inference
 #===============================================================================
 
-import sys, getopt
+import sys
 from decimal import *
 import itertools
 from copy import deepcopy
@@ -207,7 +207,8 @@ def generate_assignments(unassigned_parents,evidence,bn):
                 parents_truth_tuple.append(unassigned_parents_assign_dict[v])
         assignment_dict_list.append(unassigned_parents_assign_dict)
         parents_tuple_list.append(tuple(parents_truth_tuple))
-    print assignment_dict_list,parents_tuple_list
+    if DEBUG:
+        print assignment_dict_list,parents_tuple_list
     return assignment_dict_list,parents_tuple_list
         
     
@@ -308,26 +309,59 @@ def EUquery_handler(query,varss,bn):
         parent_query = QueryClass(1,unassigned_parents,assignment,evidence)
         # get the tuple key of the assignment
         totalUtility += Pquery_handler(parent_query, varss, bn) * bn['utility'][2][tupleVal]
-    print totalUtility
+    return totalUtility
     
-def MEUquery_handler(query,varss,bn): 
-        if len(query.evs_assignment) == 0:  # not conditional probability, all are evidences
-            return enumerateAll(deepcopy(varss), query.vars_assignment, bn)   
-        else: # conditional probability
-            return enumerationAsk(query.vars_list, query.evs_assignment,bn, deepcopy(varss))
+def MEUquery_handler(query,varss,bn):
+    query_vars = []
+    decisionNodes = []
+    # get decision nodes
+    for name in bn:
+        if bn[name][0] == 'decision':
+            decisionNodes.append(name)
+    # evidences
+    evidence = {}
+    for key in query.vars_assignment:
+        if query.vars_assignment[key] != None:
+            evidence[key] = query.vars_assignment[key]
+    for key in query.evs_assignment:
+        if query.evs_assignment[key] != None:
+            evidence[key] = query.evs_assignment[key]
+    decisions_to_do = [node for node in decisionNodes if node not in evidence]
+    MaxEU = float("-inf")
+    TruthValue = ""
+    for assignment in itertools.product([True, False], repeat=len(decisions_to_do)):
+        TruthValue_tmp = ""
+        vars_list = []
+        vars_val = {}
+        evs_val = evidence.copy()
+        for i in range(len(decisions_to_do)):
+            evs_val[decisions_to_do[i]] =  assignment[i]
+        EUquery = QueryClass(2,vars_list,vars_val,evs_val)
+        EUvalue = EUquery_handler(EUquery,varss,bn)
+        for name in query.vars_list:
+            if evs_val[name] == True:
+                TruthValue_tmp += '+ '
+            elif evs_val[name] == False:
+                TruthValue_tmp += '- '
+        if EUvalue > MaxEU:
+            MaxEU = EUvalue
+            TruthValue = TruthValue_tmp      
+    return TruthValue,MaxEU
+        
 """
 
-End of Kernal Algorithms
+End of Kernel Algorithms
 
 """
 
 if __name__ == "__main__":
-    global output_file_handle
     varss = []
     if LOCAL:
-        Input_file = "sample05.txt"
+        Input_file = "sample03.txt"
     if OUTPUT:
         Input_file = str(sys.argv[2])
+    Output_file = "output.txt"
+    output_file_handle = open(Output_file,"w")
     query_list, bn = read_input_txt_hw3_file(Input_file)
     varss = orderedVars(bn)
     if DEBUG:
@@ -335,12 +369,16 @@ if __name__ == "__main__":
     for query in query_list:
         if query.type == 1: # Probability Query
             val = Pquery_handler(query, varss, bn)
-            print "outcome: \t", val
+            val = round(Decimal(val),2)
+            print "P: \t", val
+            output_file_handle.write(val)
         elif query.type == 2: # EU Query
-            EUquery_handler(query,varss,bn)
+            val = EUquery_handler(query,varss,bn)
+            val = int(round(val))
+            print "EU: \t", val
         elif query.type == 3: # MEU Query:
-            pass
-    Output_file = "output.txt"
-    output_file_handle = open(Output_file,"w")
+            TruthValue,val = MEUquery_handler(query,varss,bn)
+            val = int(round(val))
+            print TruthValue,val
     output_file_handle.close()
     
