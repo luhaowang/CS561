@@ -369,7 +369,7 @@ if __name__ == "__main__":
     for query in query_list:
         if query.type == 1: # Probability Query
             val = Pquery_handler(query, varss, bn)
-            val = round(Decimal(val),2)
+            val = Decimal(val).quantize(Decimal('0.01'))
             if DEBUG:
                 print "P: \t", val
             output_file_handle.write(str(val))
