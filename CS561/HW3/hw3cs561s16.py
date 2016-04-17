@@ -357,7 +357,7 @@ End of Kernel Algorithms
 if __name__ == "__main__":
     varss = []
     if LOCAL:
-        Input_file = "sample03.txt"
+        Input_file = "sample04.txt"
     if OUTPUT:
         Input_file = str(sys.argv[2])
     Output_file = "output.txt"
@@ -370,15 +370,25 @@ if __name__ == "__main__":
         if query.type == 1: # Probability Query
             val = Pquery_handler(query, varss, bn)
             val = round(Decimal(val),2)
-            print "P: \t", val
-            output_file_handle.write(val)
+            if DEBUG:
+                print "P: \t", val
+            output_file_handle.write(str(val))
+            output_file_handle.write("\n")
         elif query.type == 2: # EU Query
             val = EUquery_handler(query,varss,bn)
             val = int(round(val))
-            print "EU: \t", val
+            if DEBUG:
+                print "EU: \t", val
+            output_file_handle.write(str(val))
+            output_file_handle.write("\n")
         elif query.type == 3: # MEU Query:
             TruthValue,val = MEUquery_handler(query,varss,bn)
             val = int(round(val))
-            print TruthValue,val
+            output_file_handle.write(str(TruthValue).strip())
+            output_file_handle.write(" ")
+            output_file_handle.write(str(val))
+            output_file_handle.write("\n")
+            if DEBUG:
+                print TruthValue,val
     output_file_handle.close()
     
